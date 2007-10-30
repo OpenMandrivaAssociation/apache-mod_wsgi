@@ -21,6 +21,7 @@ Requires:	apache-conf >= %{apache_version}
 Requires:	apache >= %{apache_version}
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	python-devel
+BuildRequires:	apache-mpm-prefork >= %{apache_version}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-buildroot
 
 %description
