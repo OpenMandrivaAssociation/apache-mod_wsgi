@@ -22,7 +22,6 @@ Requires:	apache >= %{apache_version}
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	python-devel
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
-BuildRoot:	%{_tmppath}/%{name}-%{version}-buildroot
 
 %description
 The mod_wsgi adapter is an Apache module that provides a WSGI compliant
