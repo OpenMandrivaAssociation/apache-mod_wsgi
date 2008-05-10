@@ -1,13 +1,13 @@
 #Module-Specific definitions
-%define apache_version 2.2.6
+%define apache_version 2.2.8
 %define mod_name mod_wsgi
 %define mod_conf B23_%{mod_name}.conf
 %define mod_so %{mod_name}.so
 
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
-Version:	1.2
-Release:	%mkrel 2
+Version:	2.0
+Release:	%mkrel 1
 Group:		System/Servers
 License:	Apache License
 URL:		http://code.google.com/p/modwsgi/
@@ -22,7 +22,7 @@ Requires:	apache >= %{apache_version}
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	python-devel
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
-BuildRoot:	%{_tmppath}/%{name}-%{version}-buildroot
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 The mod_wsgi adapter is an Apache module that provides a WSGI compliant
@@ -47,7 +47,7 @@ autoconf
 %make
 
 %install
-[ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
+rm -rf %{buildroot}
 
 install -d %{buildroot}%{_libdir}/apache-extramodules
 install -d %{buildroot}%{_sysconfdir}/httpd/modules.d
@@ -68,11 +68,10 @@ if [ "$1" = "0" ]; then
 fi
 
 %clean
-[ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
 %doc LICENCE README
 %attr(0644,root,root) %config(noreplace) %{_sysconfdir}/httpd/modules.d/%{mod_conf}
 %attr(0755,root,root) %{_libdir}/apache-extramodules/%{mod_so}
-
