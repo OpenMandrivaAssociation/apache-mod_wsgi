@@ -6,7 +6,7 @@
 
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
-Version:	2.1
+Version:	2.3
 Release:	%mkrel 1
 Group:		System/Servers
 License:	Apache License
