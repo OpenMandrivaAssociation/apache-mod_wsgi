@@ -6,14 +6,13 @@
 
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
-Version:	2.3
-Release:	%mkrel 3
+Version:	2.5
+Release:	%mkrel 1
 Group:		System/Servers
 License:	Apache License
 URL:		http://code.google.com/p/modwsgi/
 Source0:	http://modwsgi.googlecode.com/files/%{mod_name}-%{version}.tar.gz
 Source1:	%{mod_conf}
-Patch0:     mod_wsgi-2.3-format.diff
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires(pre):	apache-conf >= %{apache_version}
@@ -37,8 +36,6 @@ existing WSGI adapters for mod_python or CGI.
 %setup -q -n %{mod_name}-%{version}
 
 cp %{SOURCE1} %{mod_conf}
-
-%patch0 -p0
 
 %build
 rm -f configure
