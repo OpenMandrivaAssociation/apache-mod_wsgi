@@ -1,28 +1,22 @@
 #Module-Specific definitions
-%define apache_version 2.2.8
+%define apache_version 2.4.0
 %define mod_name mod_wsgi
-%define mod_conf B23_%{mod_name}.conf
-%define mod_so %{mod_name}.so
+%define load_order 123
 
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
 Version:	3.3
-Release:	%mkrel 5
+Release:	6
 Group:		System/Servers
 License:	Apache License
 URL:		http://code.google.com/p/modwsgi/
 Source0:	http://modwsgi.googlecode.com/files/%{mod_name}-%{version}.tar.gz
-Source1:	%{mod_conf}
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
-Requires(pre):	apache-conf >= %{apache_version}
-Requires(pre):	apache >= %{apache_version}
-Requires:	apache-conf >= %{apache_version}
 Requires:	apache >= %{apache_version}
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	python-devel
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 The mod_wsgi adapter is an Apache module that provides a WSGI compliant
@@ -35,43 +29,35 @@ existing WSGI adapters for mod_python or CGI.
 
 %setup -q -n %{mod_name}-%{version}
 
-cp %{SOURCE1} %{mod_conf}
-
 %build
 rm -f configure
 autoconf
 
 %configure2_5x --localstatedir=/var/lib \
-    --with-apxs=%{_sbindir}/apxs
+    --with-apxs=%{_bindir}/apxs
 
 %make
 
 %install
-rm -rf %{buildroot}
 
-install -d %{buildroot}%{_libdir}/apache-extramodules
+install -d %{buildroot}%{_libdir}/apache
 install -d %{buildroot}%{_sysconfdir}/httpd/modules.d
 
-install -m0755 .libs/%{mod_so} %{buildroot}%{_libdir}/apache-extramodules
-install -m0644 %{mod_conf} %{buildroot}%{_sysconfdir}/httpd/modules.d/%{mod_conf}
+install -m0755 .libs/*.so %{buildroot}%{_libdir}/apache
+
+cat > %{buildroot}%{_sysconfdir}/httpd/modules.d/%{load_order}_%{mod_name}.conf << EOF
+LoadModule wsgi_module %{_libdir}/%{mod_name}.so
+EOF
 
 %post
-if [ -f %{_var}/lock/subsys/httpd ]; then
-    %{_initrddir}/httpd restart 1>&2;
-fi
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 
 %postun
 if [ "$1" = "0" ]; then
-    if [ -f %{_var}/lock/subsys/httpd ]; then
-        %{_initrddir}/httpd restart 1>&2
-    fi
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
-%clean
-rm -rf %{buildroot}
-
 %files
-%defattr(-,root,root)
 %doc LICENCE README
-%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/httpd/modules.d/%{mod_conf}
-%attr(0755,root,root) %{_libdir}/apache-extramodules/%{mod_so}
+%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/httpd/modules.d/*.conf
+%attr(0755,root,root) %{_libdir}/apache/*.so
