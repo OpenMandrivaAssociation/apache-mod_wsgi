@@ -46,7 +46,7 @@ install -d %{buildroot}%{_sysconfdir}/httpd/modules.d
 install -m0755 .libs/*.so %{buildroot}%{_libdir}/apache
 
 cat > %{buildroot}%{_sysconfdir}/httpd/modules.d/%{load_order}_%{mod_name}.conf << EOF
-LoadModule wsgi_module %{_libdir}/%{mod_name}.so
+LoadModule wsgi_module %{_libdir}/apache/%{mod_name}.so
 EOF
 
 %post
