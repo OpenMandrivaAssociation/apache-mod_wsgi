@@ -7,7 +7,7 @@
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
 Version:	3.4
-Release:	1
+Release:	2
 Group:		System/Servers
 License:	Apache License
 URL:		http://code.google.com/p/modwsgi/
