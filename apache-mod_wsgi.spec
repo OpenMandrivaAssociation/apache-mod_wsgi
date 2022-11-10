@@ -1,17 +1,17 @@
 #Module-Specific definitions
-%define apache_version 2.2.8
+%define apache_version 2.4.46
 %define mod_name mod_wsgi
 %define mod_conf B23_%{mod_name}.conf
 %define mod_so %{mod_name}.so
 
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
-Version:	3.4
-Release:	2
+Version:	4.9.0
+Release:	1
 Group:		System/Servers
 License:	Apache License
-URL:		http://code.google.com/p/modwsgi/
-Source0:	http://modwsgi.googlecode.com/files/%{mod_name}-%{version}.tar.gz
+URL:		https://github.com/GrahamDumpleton/mod_wsgi
+Source0:	https://github.com/GrahamDumpleton/mod_wsgi/archive/%{version}/%{mod_name}-%{version}.tar.gz
 Source1:	%{mod_conf}
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
@@ -20,7 +20,8 @@ Requires(pre):	apache >= %{apache_version}
 Requires:	apache-conf >= %{apache_version}
 Requires:	apache >= %{apache_version}
 BuildRequires:	apache-devel >= %{apache_version}
-BuildRequires:	python-devel
+BuildRequires:	pkgconfig(python3)
+BuildRequires:	python3dist(setuptools)
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
 
 %description
@@ -30,27 +31,56 @@ adapter is written completely in C code against the Apache C runtime and
 for hosting WSGI applications within Apache has a lower overhead than using
 existing WSGI adapters for mod_python or CGI.
 
+%files
+%doc LICENCE README
+%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/httpd/modules.d/%{mod_conf}
+%attr(0755,root,root) %{_libdir}/apache-extramodules/%{mod_so}
+
+#---------------------------------------------------------------------------
+
+%package -n python-%{mod_name}
+Summary:	python module for %{mod_name}
+Requires:	httpd
+Requires:	%{name} = %{EVRD}
+
+%description -n python-%{mod_name}
+The mod_wsgi adapter is an Apache module that provides a WSGI compliant
+interface for hosting Python based web applications within Apache. The
+adapter is written completely in C code against the Apache C runtime and
+for hosting WSGI applications within Apache has a lower overhead than using
+existing WSGI adapters for mod_python or CGI.
+
+This packages provides a python python module for %{mod_name}.
+
+%files -n python-%{mod_name}
+%license LICENSE
+%doc CREDITS.rst README.rst
+%{python3_sitearch}/mod_wsgi-*.egg-info
+%{python3_sitearch}/mod_wsgi
+%{_bindir}/mod_wsgi-express
+
+#---------------------------------------------------------------------------
+
 %prep
-
-%setup -q -n %{mod_name}-%{version}
-
+%autosetup -n %{mod_name}-%{version}
 cp %{SOURCE1} %{mod_conf}
 
 %build
-rm -f configure
-autoconf
+%config_update
+%configure \
+	--localstatedir=/var/lib \
+	--with-apxs=%{_bindir}/apxs
 
-%configure2_5x --localstatedir=/var/lib \
-    --with-apxs=%{_bindir}/apxs
-
-%make
+%make_build
+%py_build
 
 %install
+%py_install
 
-install -d %{buildroot}%{_libdir}/apache-extramodules
+install -d %{buildroot}%{_libdir}/apache
 install -d %{buildroot}%{_sysconfdir}/httpd/modules.d
 
-install -m0755 .libs/%{mod_so} %{buildroot}%{_libdir}/apache-extramodules
+install -m0755 src/server/.libs/%{mod_so} %{buildroot}%{_libdir}/apache
 install -m0644 %{mod_conf} %{buildroot}%{_sysconfdir}/httpd/modules.d/%{mod_conf}
 
 %post
@@ -64,13 +94,6 @@ if [ "$1" = "0" ]; then
         %{_initrddir}/httpd restart 1>&2
     fi
 fi
-
-%clean
-
-%files
-%doc LICENCE README
-%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/httpd/modules.d/%{mod_conf}
-%attr(0755,root,root) %{_libdir}/apache-extramodules/%{mod_so}
 
 
 %changelog
