@@ -48,7 +48,7 @@ existing WSGI adapters for mod_python or CGI.
 %if %{with python}
 %package -n python-%{mod_name}
 Summary:	python module for %{mod_name}
-Requires:	httpd
+Requires:	apache	
 Requires:	%{name} = %{EVRD}
 BuildRequires:	pkgconfig(python3)
 BuildRequires:	python3dist(setuptools)
