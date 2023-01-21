@@ -54,7 +54,7 @@ BuildRequires:	pkgconfig(python3)
 BuildRequires:	python3dist(setuptools)
 %if %{with docs}
 BuildRequires:	python3dist(sphinx)
-BuildRequires:	python3dist(sphinx_rtd_theme)
+BuildRequires:	python3dist(sphinx-rtd-theme)
 %endif
 
 %description -n python-%{mod_name}
