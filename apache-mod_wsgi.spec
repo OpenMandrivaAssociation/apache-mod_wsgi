@@ -83,8 +83,8 @@ cp %{SOURCE1} %{mod_conf}
 sed -i "s|_MODULE_DIR_|%{_libdir}/apache|g" %{mod_conf}
 
 %build
-export LDFLAGS="%{ldflags} -L%{_libdir} `pkg-config --libs apr-1 apr-util-1`"
-export CFLAGS="%{optflags} -fno-strict-aliasing `pkg-config --cflags apr-1 apr-util-1`"
+export LDFLAGS="%{ldflags} -L%{_libdir}"
+export CFLAGS="%{optflags} -fno-strict-aliasing"
 
 %config_update
 %configure \
