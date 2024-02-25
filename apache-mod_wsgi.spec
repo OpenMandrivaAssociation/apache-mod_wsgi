@@ -18,6 +18,7 @@ License:	Apache License
 URL:		https://github.com/GrahamDumpleton/mod_wsgi
 Source0:	https://github.com/GrahamDumpleton/mod_wsgi/archive/%{version}/mod_wsgi-%{version}.tar.gz
 Source1:	%{mod_conf}
+Source2:	wsgi-python3.conf
 Patch0:		mod_wsgi-4.5.20-exports.patch
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
@@ -40,21 +41,21 @@ existing WSGI adapters for mod_python or CGI.
 %files
 %license LICENSE
 %doc README.rst
-%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/httpd/modules.d/%{mod_conf}
-%attr(0755,root,root) %{_libdir}/apache/%{mod_so}
+%config(noreplace) %{_sysconfdir}/httpd/modules.d/%{mod_conf}
+%{_libdir}/apache/%{mod_so}
 
 #---------------------------------------------------------------------------
 
 %if %{with python}
 %package -n python-%{mod_name}
-Summary:	python module for %{mod_name}
+Summary:	Python module for %{mod_name}
 Requires:	apache	
 Requires:	%{name} = %{EVRD}
-BuildRequires:	pkgconfig(python3)
-BuildRequires:	python3dist(setuptools)
+BuildRequires:	pkgconfig(python)
+BuildRequires:	python%{pyver}dist(setuptools)
 %if %{with docs}
-BuildRequires:	python3dist(sphinx)
-BuildRequires:	python3dist(sphinx-rtd-theme)
+BuildRequires:	python%{pyver}dist(sphinx)
+BuildRequires:	python%{pyver}dist(sphinx-rtd-theme)
 %endif
 
 %description -n python-%{mod_name}
@@ -69,8 +70,9 @@ This packages provides a python python module for %{mod_name}.
 %files -n python-%{mod_name}
 %license LICENSE
 %doc CREDITS.rst README.rst
-%{python3_sitearch}/mod_wsgi-*.*-info
-%{python3_sitearch}/mod_wsgi
+%config(noreplace) %{_sysconfdir}/httpd/modules.d/*wsgi-python3.conf
+%{py_platsitedir}/mod_wsgi-*.*-info
+%{py_platsitedir}/mod_wsgi
 %{_bindir}/mod_wsgi-express
 %endif
 
@@ -82,12 +84,16 @@ This packages provides a python python module for %{mod_name}.
 cp %{SOURCE1} %{mod_conf}
 sed -i "s|_MODULE_DIR_|%{_libdir}/apache|g" %{mod_conf}
 
+cp %{SOURCE2} 10-wsgi-python3.conf
+sed -i "s|_MODULE_DIR_|%{_libdir}/apache|g" 10-wsgi-python3.conf
+
 %build
 export LDFLAGS="%{ldflags} -L%{_libdir}"
 export CFLAGS="%{optflags} -fno-strict-aliasing"
 
 %config_update
 %configure \
+	 --enable-shared \
 	--localstatedir=/var/lib \
 	--with-apxs=%{_bindir}/apxs
 %make_build
@@ -108,6 +114,7 @@ install -pm 0755 src/server/.libs/%{mod_so} %{buildroot}%{_libdir}/apache
 
 install -pm 0755 -d %{buildroot}%{_sysconfdir}/httpd/modules.d
 install -pm 0644 %{mod_conf} %{buildroot}%{_sysconfdir}/httpd/modules.d/%{mod_conf}
+install -pm 0644 10-wsgi-python3.conf %{buildroot}%{_sysconfdir}/httpd/modules.d/
 
 %post
 if [ -f %{_var}/lock/subsys/httpd ]; then
