@@ -12,7 +12,7 @@
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
 Version:	5.0.2
-Release:	1
+Release:	2
 Group:		System/Servers
 License:	Apache License
 URL:		https://github.com/GrahamDumpleton/mod_wsgi
