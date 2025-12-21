@@ -20,6 +20,11 @@ Source0:	https://github.com/GrahamDumpleton/mod_wsgi/archive/%{version}/mod_wsgi
 Source1:	%{mod_conf}
 Source2:	wsgi-python3.conf
 Patch0:		mod_wsgi-4.5.20-exports.patch
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
 BuildRequires:  pkgconfig(apr-1)
