@@ -1,36 +1,32 @@
 %define _disable_ld_no_undefined %nil
 
 #Module-Specific definitions
-%define apache_version 2.4.46
+%define apache_version 2.4.69
 %define mod_name mod_wsgi
 %define mod_conf B23_%{mod_name}.conf
 %define mod_so %{mod_name}.so
 
 %bcond_without	python
-%bcond_without	docs
+# HTML is not packaged; leave the sphinx build opt-in.
+%bcond_with	docs
 
 Summary:	Python WSGI adapter module for Apache
 Name:		apache-%{mod_name}
-Version:	5.0.2
-Release:	2
+Version:	6.1.0
+Release:	1
 Group:		System/Servers
 License:	Apache License
 URL:		https://github.com/GrahamDumpleton/mod_wsgi
-Source0:	https://github.com/GrahamDumpleton/mod_wsgi/archive/%{version}/mod_wsgi-%{version}.tar.gz
+Source0:	https://github.com/GrahamDumpleton/mod_wsgi/archive/refs/tags/mod_wsgi-%{version}/mod_wsgi-%{version}.tar.gz
 Source1:	%{mod_conf}
-Source2:	wsgi-python3.conf
 Patch0:		mod_wsgi-4.5.20-exports.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	libtool-base
-BuildRequires:	slibtool
 BuildRequires:	make
 BuildRequires:	apache-devel >= %{apache_version}
 BuildRequires:	apache-mpm-prefork >= %{apache_version}
 BuildRequires:  pkgconfig(apr-1)
 
-Requires(pre): rpm-helper
-Requires(postun): rpm-helper
 Requires(pre):	apache-conf >= %{apache_version}
 Requires(pre):	apache >= %{apache_version}
 Requires:	apache-conf >= %{apache_version}
@@ -75,7 +71,6 @@ This packages provides a python python module for %{mod_name}.
 %files -n python-%{mod_name}
 %license LICENSE
 %doc CREDITS.rst README.rst
-%config(noreplace) %{_sysconfdir}/httpd/modules.d/*wsgi-python3.conf
 %{py_platsitedir}/mod_wsgi-*.*-info
 %{py_platsitedir}/mod_wsgi
 %{_bindir}/mod_wsgi-express
@@ -84,13 +79,10 @@ This packages provides a python python module for %{mod_name}.
 #---------------------------------------------------------------------------
 
 %prep
-%autosetup -n %{mod_name}-%{version}
+%autosetup -n %{mod_name}-%{mod_name}-%{version}
 
 cp %{SOURCE1} %{mod_conf}
 sed -i "s|_MODULE_DIR_|%{_libdir}/apache|g" %{mod_conf}
-
-cp %{SOURCE2} 10-wsgi-python3.conf
-sed -i "s|_MODULE_DIR_|%{_libdir}/apache|g" 10-wsgi-python3.conf
 
 %build
 export LDFLAGS="%{ldflags} -L%{_libdir}"
@@ -112,24 +104,13 @@ export CFLAGS="%{optflags} -fno-strict-aliasing"
 %endif
 
 %install
+%if %{with python}
 %py_install
+%endif
 
 install -pm 0755 -d %{buildroot}%{_libdir}/apache
 install -pm 0755 src/server/.libs/%{mod_so} %{buildroot}%{_libdir}/apache
 
 install -pm 0755 -d %{buildroot}%{_sysconfdir}/httpd/modules.d
 install -pm 0644 %{mod_conf} %{buildroot}%{_sysconfdir}/httpd/modules.d/%{mod_conf}
-install -pm 0644 10-wsgi-python3.conf %{buildroot}%{_sysconfdir}/httpd/modules.d/
-
-%post
-if [ -f %{_var}/lock/subsys/httpd ]; then
-    %{_initrddir}/httpd restart 1>&2;
-fi
-
-%postun
-if [ "$1" = "0" ]; then
-    if [ -f %{_var}/lock/subsys/httpd ]; then
-        %{_initrddir}/httpd restart 1>&2
-    fi
-fi
 
